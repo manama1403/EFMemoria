@@ -11,6 +11,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+//using Microsoft.EntityFrameworkCore.InMemory;
+//using Microsoft.EntityFrameworkCore;
+using DemoEnMemoria.Modelo;
+using Microsoft.EntityFrameworkCore;
 
 namespace DemoEnMemoria
 {
@@ -26,7 +30,10 @@ namespace DemoEnMemoria
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddDbContext<EmpleadoDbContext>
+                (option => option.UseInMemoryDatabase(Configuration.GetConnectionString("MyDb")));
+            //(optionsAction: option:DbContextOptionsBuilder => option.UseInMemoryDataBase());
+                //(option => option.UseSqlServer(Configuration("database:connection")));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -54,6 +61,36 @@ namespace DemoEnMemoria
             {
                 endpoints.MapControllers();
             });
+
+            var scope = app.ApplicationServices.CreateScope();
+            var context = scope.ServiceProvider.GetService<EmpleadoDbContext>();
+            DatosIniciales(context);
+
         }
+        public static void DatosIniciales(EmpleadoDbContext context)
+        {
+            Empleados emp1 = new Empleados
+            {
+                Id = 2,
+                nombre = "Claudia Rivera",
+                genero = "Femenino",
+                salario = 4500000,
+                edad = 37
+            };
+
+            Empleados emp2 = new Empleados
+            {
+                Id = 3,
+                nombre = "Sandra Milena Navas",
+                genero = "Femenino",
+                salario = 4100000,
+                edad = 39
+            };
+
+            context.Empleados.Add(emp1);
+            context.Empleados.Add(emp2);
+            context.SaveChanges();
+        }
+
     }
 }
